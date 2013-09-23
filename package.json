@@ -1,20 +1,20 @@
 {
-  "name": "modella-rest",
-  "description": "Create RESTful resource routes for a given Modella model.",
+  "name": "modella-express",
+  "description": "Expose Modella models via Express middleware.",
   "version": "0.1.0",
   "author": "Bloodhound <alex@bloodhound.com>",
-  "homepage": "https://github.com/bloodhound/modella-rest",
+  "homepage": "https://github.com/bloodhound/modella-express",
   "contributors": [
     {
       "name": "Alex Mingoia",
-      "email": "alex@bloodhound.com"
+      "email": "talk@alexmingoia.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bloodhound/modella-rest.git"
+    "url": "https://github.com/bloodhound/modella-express.git"
   },
-  "main": "./rest.js",
+  "main": "./middleware.js",
   "dependencies": {
     "inflect": "git://github.com/bloodhound/inflect.git#63bcaff88906f7888f4d0a696e9596360c93a0c0"
   },
