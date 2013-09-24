@@ -1,63 +1,64 @@
-# modella-rest
+# modella-express
 
-Create RESTful resource routes for a given Modella model.
+Expose Modella models via Express middleware. Adds REST routes with callbacks
+including self-describing OPTIONS response for each route.
+
+This module can be paired with [modella-ajax](https://github.com/modella/ajax)
+for automatic client-server communication.
 
 ## Installation
 
 ```sh
-npm install modella-rest
+npm install modella-express
 ```
 
 ## Example
 
-Simply add the modella-rest plugin to your model and you will have routes ready
-to use with Express:
+Pass a Modella model constructor to the modella-express middleware and mount it:
 
 ```javascript
+var app = express();
 var modella = require('modella');
-var rest = require('modella-rest');
+var modellaMiddleware = require('modella-express');
 
 var User = modella('User');
 
-User.use(rest);
-
-console.log(User.resource);
+app.use(modellaMiddleware(User));
 ```
 
-User.resource looks like:
+## Actions
+
+Each action callback is exposed via `exports.actions`.
+
+You can override these if you want to customize your action callbacks. Each
+actions is called with arguments `Model, req, res, next`:
 
 ```javascript
-{ index:   { path: '/users',     action: [Function] },
-  create:  { path: '/users',     action: [Function] },
-  show:    { path: '/users/:id', action: [Function] },
-  update:  { path: '/users/:id', action: [Function] },
-  destroy: { path: '/users/:id', action: [Function] } },
-```
+var actions = require('modella-express').actions;
 
-Register routes with Express in one go:
+actions.index = function(Model, req, res, next) {
+  // ...
+};
 
-```javascript
-var app = express();
-var User = modella('user');
+actions.count = function(Model, req, res, next) {
+  // ...
+};
 
-User.use(rest);
-User.map(app.router);
-```
+actions.show = function(Model, req, res, next) {
+  // ...
+};
 
-Or manually:
+actions.create = function(Model, req, res, next) {
+  // ...
+};
 
-```javascript
-var app = express();
-var User = modella('user');
+actions.update = function(Model, req, res, next) {
+  // ...
+};
 
-User.use(rest);
-
-var resource = User.resource;
-app.get(resource.index.path, resource.index.action);
-app.get(resource.show.path, resource.show.action);
-app.put(resource.update.path, resource.update.action);
-app.post(resource.create.path, resource.create.action);
-app.del(resource.destroy.path, resource.destroy.action);
+actions.destroy = function(Model, req, res, next) {
+  // ...
+};
 ```
 
 ## MIT Licensed

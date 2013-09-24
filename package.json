@@ -1,8 +1,8 @@
 {
   "name": "modella-express",
-  "description": "Expose Modella models via Express middleware.",
+  "description": "Expose Modella models via Express middleware. Adds REST routes with callbacks including self-describing OPTIONS response for each route.",
   "version": "0.1.0",
-  "author": "Bloodhound <alex@bloodhound.com>",
+  "author": "Alex Mingoia <talk@alexmingoia.com>",
   "homepage": "https://github.com/bloodhound/modella-express",
   "contributors": [
     {
@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bloodhound/modella-express.git"
+    "url": "https://github.com/alexmingoia/modella-express.git"
   },
   "main": "./middleware.js",
   "dependencies": {

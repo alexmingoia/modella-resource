@@ -3,8 +3,11 @@
  *
  * Expose Modella models via Express middleware.
  *
- * @link https://github.com/bloodhound/modella-middleware
- * @author Bloodhound <alex@bloodhound.com>
+ * Adds REST routes with callbacks including self-describing OPTIONS response
+ * for each route.
+ *
+ * @link https://github.com/alexmingoia/modella-express
+ * @author Alex Mingoia <talk@alexmingoia.com>
  */
 
 /**
@@ -47,7 +50,7 @@ module.exports = function(Model) {
       return str;
     });
     if (!pathToActions[path] || !pathToActions[path][req.method]) return next();
-    actions[pathToActions[path][req.method]].call(Model, req, res, next);
+    actions[pathToActions[path][req.method]](Model, req, res, next);
   };
 };
 
@@ -57,29 +60,29 @@ module.exports = function(Model) {
 
 var actions = exports.actions = {};
 
-actions.index = function(req, res, next) {
-  this.all(req.query, function(err, collection) {
+actions.index = function(Model, req, res, next) {
+  Model.all(req.query, function(err, collection) {
     if (err) return next(err);
     res.json(collection);
   });
 };
 
-actions.count = function(req, res, next) {
-  this.count(req.query, function(err, count) {
+actions.count = function(Model, req, res, next) {
+  Model.count(req.query, function(err, count) {
     if (err) return next(err);
     res.json({ count: count });
   });
 };
 
-actions.show = function(req, res, next) {
-  this.find(req.params.id, function(err, model) {
+actions.show = function(Model, req, res, next) {
+  Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     res.json(model);
   });
 };
 
-actions.create = function(req, res, next) {
-  var model = new this(req.body);
+actions.create = function(Model, req, res, next) {
+  var model = new Model(req.body);
   model.save(function(err) {
     if (err) return next(err);
     res.set('Location', model.url());
@@ -87,8 +90,8 @@ actions.create = function(req, res, next) {
   });
 };
 
-actions.update = function(req, res, next) {
-  this.find(req.params.id, function(err, model) {
+actions.update = function(Model, req, res, next) {
+  Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     model.set(req.body);
     model.save(function(err) {
@@ -98,8 +101,8 @@ actions.update = function(req, res, next) {
   });
 };
 
-actions.destroy = function(req, res, next) {
-  this.find(req.params.id, function(err, model) {
+actions.destroy = function(Model, req, res, next) {
+  Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     model.remove(function(err) {
       if (err) return next(err);
