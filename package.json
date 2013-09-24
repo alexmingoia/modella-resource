@@ -15,9 +15,6 @@
     "url": "https://github.com/alexmingoia/modella-express.git"
   },
   "main": "./middleware.js",
-  "dependencies": {
-    "inflect": "git://github.com/bloodhound/inflect.git#63bcaff88906f7888f4d0a696e9596360c93a0c0"
-  },
   "devDependencies": {
     "modella": "git://github.com/alexmingoia/modella.git#a3d08e96bfe9d71d9fc8ac365f9ea23b255a9fef",
     "mocha": "1.13.0",

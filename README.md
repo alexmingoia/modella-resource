@@ -26,6 +26,17 @@ var User = modella('User');
 app.use(modellaMiddleware(User));
 ```
 
+These routes will then be available:
+
+```
+/users
+    GET, POST
+/users/count
+    GET
+/users/:id
+    GET, PUT, DELETE
+```
+
 ## Actions
 
 Each action callback is exposed via `exports.actions`.

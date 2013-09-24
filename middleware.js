@@ -11,12 +11,6 @@
  */
 
 /**
- * Dependencies
- */
-
-var inflect = require('inflect');
-
-/**
  * Create middleware for given modella `Model`.
  *
  * @param {Model} Model
@@ -25,7 +19,6 @@ var inflect = require('inflect');
  */
 
 module.exports = function(Model) {
-  Model.base = '/' + inflect.pluralize(Model.modelName).toLowerCase();
   var regex = new RegExp('^' + Model.base + '/([^/]+)');
   var pathToActions = {};
   pathToActions[Model.base] = {
