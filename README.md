@@ -30,12 +30,20 @@ These routes will then be available:
 
 ```
 /users
-    GET, POST
+    GET, POST, OPTIONS
 /users/count
-    GET
+    GET, OPTIONS
 /users/:id
-    GET, PUT, DELETE
+    GET, PUT, DELETE, OPTIONS
 ```
+
+## Self-describing OPTIONS
+
+If an `OPTIONS` request is made to any endpoint defined by modella-express, a
+JSON description of the available actions is included in the response body.
+
+You can combine this with OPTIONS middleware mounted at your API root path,
+which responds with a JSON description of the available resources.
 
 ## Actions
 
