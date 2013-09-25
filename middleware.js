@@ -133,7 +133,7 @@ actions.options = function(Model, req, res, next) {
     body.DELETE = generateActionSpec('destroy', Model);
     res.setHeader('Allow', 'GET, PUT, DELETE');
   }
-  else if (req.modelPath === Model.base + '/:id/count') {
+  else if (req.modelPath === Model.base + '/count') {
     body.GET = generateActionSpec('count', Model);
     res.setHeader('Allow', 'GET');
   }
