@@ -67,7 +67,7 @@ module.exports = function(Model) {
  * REST resource actions
  */
 
-var actions = exports.actions = {};
+var actions = module.exports.actions = {};
 
 actions.index = function(Model, req, res, next) {
   Model.all(req.query, function(err, collection) {
@@ -137,7 +137,7 @@ actions.options = function(Model, req, res, next) {
     body.GET = generateActionSpec('count', Model);
     res.setHeader('Allow', 'GET');
   }
-  res.json(body);
+  res.json(200, body);
 };
 
 /**
