@@ -1,5 +1,8 @@
 # modella-express
 
+[![Build Status](https://secure.travis-ci.org/alexmingoia/modella-express.png)](http://travis-ci.org/alexmingoia/modella-express) 
+[![Dependency Status](https://david-dm.org/alexmingoia/modella-express.png)](http://david-dm.org/alexmingoia/modella-express)
+
 Expose Modella models via Express middleware. Adds REST routes with callbacks
 including self-describing OPTIONS response for each route.
 
