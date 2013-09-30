@@ -1,5 +1,5 @@
 /**
- * modella-express tests
+ * modella-resource tests
  */
 
 var express = require('express')
