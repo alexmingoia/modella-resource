@@ -26,7 +26,7 @@ var app = express();
 
 var User = modella('User');
 
-app.use(resource(User));
+app.use(resource(User).middleware());
 ```
 
 These routes will then be available:
@@ -63,5 +63,22 @@ app.use(resource(User, {
   destroy: function(Model, req, res, next) { }
 });
 ```
+
+## Nesting resources
+
+You can nest resources using `resource.add()`:
+
+```javascript
+var UserResource = resource(User);
+var PostResource = resource(Post);
+
+app.use(UserResource.add(PostResource).middleware());
+```
+
+This creates routes such as `/users/:id/posts` and so on.
+
+## Resource#middleware
+
+Returns Express/Connect middleware.
 
 ## MIT Licensed
