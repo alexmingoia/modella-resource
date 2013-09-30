@@ -3,7 +3,7 @@
  */
 
 var express = require('express')
-  , modellaExpress = require('..')
+  , resource = require('..')
   , modella = require('modella')
   , should = require('should')
   , request = require('superagent');
@@ -17,17 +17,17 @@ describe('module', function() {
   app.use(express.bodyParser());
 
   it('exports middleware', function(done) {
-    should.exist(modellaExpress);
-    modellaExpress.should.be.a('function');
-    var middleware = modellaExpress(User);
+    should.exist(resource);
+    resource.should.be.a('function');
+    var middleware = resource(User).middleware();
     should.exist(middleware);
     middleware.should.be.a('function');
-    app.use(modellaExpress(User));
+    app.use(middleware);
     app.listen(serverPort);
     done();
   });
 
-  describe('actions.index()', function() {
+  describe('resource.index()', function() {
     it('responds to GET /users', function(done) {
       User.all = function(query, callback) {
         callback(null, []);
@@ -55,7 +55,7 @@ describe('module', function() {
     });
   });
 
-  describe('actions.count()', function(done) {
+  describe('resource.count()', function(done) {
     it('responds to GET /users/count', function(done) {
       User.count = function(query, callback) {
         callback();
@@ -83,7 +83,7 @@ describe('module', function() {
     });
   });
 
-  describe('actions.show()', function(done) {
+  describe('resource.show()', function(done) {
     it('responds to GET /users/123', function(done) {
       User.find = function(id, callback) {
         callback(null, { id: 123, name: "bob" });
@@ -113,7 +113,7 @@ describe('module', function() {
     });
   });
 
-  describe('actions.create()', function(done) {
+  describe('resource.create()', function(done) {
     it('responds to POST /users', function(done) {
       request
         .post(serverUrl + '/users')
@@ -137,7 +137,7 @@ describe('module', function() {
     });
   });
 
-  describe('actions.update()', function(done) {
+  describe('resource.update()', function(done) {
     it('responds to PUT /users/123', function(done) {
       User.find = function(id, callback) {
         callback(null, new User({ id: 123, name: "jeff" }));
@@ -169,7 +169,7 @@ describe('module', function() {
     });
   });
 
-  describe('actions.destroy()', function(done) {
+  describe('resource.destroy()', function(done) {
     var user = new User({ id: 123, name: "jeff" });
 
     it('responds to DELETE /users/123', function(done) {
@@ -206,7 +206,7 @@ describe('module', function() {
     });
   });
 
-  describe('actions.options()', function(done) {
+  describe('resource.options()', function(done) {
     var user = new User({ id: 123, name: "jeff" });
 
     it('responds to OPTIONS /users', function(done) {

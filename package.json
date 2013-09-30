@@ -1,9 +1,9 @@
 {
-  "name": "modella-express",
+  "name": "modella-resource",
   "description": "Expose Modella models via Express middleware. Adds REST routes with callbacks including self-describing OPTIONS response for each route.",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": "Alex Mingoia <talk@alexmingoia.com>",
-  "homepage": "https://github.com/bloodhound/modella-express",
+  "homepage": "https://github.com/bloodhound/modella-resource",
   "contributors": [
     {
       "name": "Alex Mingoia",
@@ -12,11 +12,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexmingoia/modella-express.git"
+    "url": "https://github.com/alexmingoia/modella-resource.git"
   },
-  "main": "./middleware.js",
+  "main": "./resource.js",
   "dependencies": {
-    "inflect": "git://github.com/bloodhound/inflect.git#63bcaff88906f7888f4d0a696e9596360c93a0c0"
+    "inflect": "git://github.com/bloodhound/inflect.git#63bcaff88906f7888f4d0a696e9596360c93a0c0",
+    "extend": "1.2.1"
   },
   "devDependencies": {
     "express": "3.4.0",
@@ -26,7 +27,7 @@
     "superagent": "0.15.4"
   },
   "scripts": {
-    "test": "NODE_ENV=test node_modules/mocha/bin/mocha --bail --reporter spec test"
+    "test": "NODE_ENV=test node_modules/mocha/bin/mocha --reporter spec test"
   },
   "engines": {
     "node": ">= 0.8"

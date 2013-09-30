@@ -1,7 +1,7 @@
-# modella-express
+# modella-resource
 
-[![Build Status](https://secure.travis-ci.org/alexmingoia/modella-express.png)](http://travis-ci.org/alexmingoia/modella-express) 
-[![Dependency Status](https://david-dm.org/alexmingoia/modella-express.png)](http://david-dm.org/alexmingoia/modella-express)
+[![Build Status](https://secure.travis-ci.org/alexmingoia/modella-resource.png)](http://travis-ci.org/alexmingoia/modella-resource) 
+[![Dependency Status](https://david-dm.org/alexmingoia/modella-resource.png)](http://david-dm.org/alexmingoia/modella-resource)
 
 Expose Modella models via Express middleware. Adds REST routes with callbacks
 including self-describing OPTIONS response for each route.
@@ -12,21 +12,21 @@ for automatic client-server communication.
 ## Installation
 
 ```sh
-npm install modella-express
+npm install modella-resource
 ```
 
 ## Example
 
-Pass a Modella model constructor to the modella-express middleware and mount it:
+Pass a Modella model constructor to the modella-resource middleware and mount it:
 
 ```javascript
 var app = express();
-var modella = require('modella');
-var modellaMiddleware = require('modella-express');
+  , modella = require('modella');
+  , resource = require('modella-resource');
 
 var User = modella('User');
 
-app.use(modellaMiddleware(User));
+app.use(resource(User));
 ```
 
 These routes will then be available:
@@ -42,7 +42,7 @@ These routes will then be available:
 
 ## Self-describing OPTIONS
 
-If an `OPTIONS` request is made to any endpoint defined by modella-express, a
+If an `OPTIONS` request is made to any endpoint defined by modella-resource, a
 JSON description of the available actions is included in the response body.
 
 You can combine this with OPTIONS middleware mounted at your API root path,
@@ -50,37 +50,18 @@ which responds with a JSON description of the available resources.
 
 ## Actions
 
-Each action callback is exposed via `exports.actions`.
-
-You can override these if you want to customize your action callbacks. Each
-actions is called with arguments `Model, req, res, next`:
+You can override the resource actions if you want to customize the route
+callbacks. Each actions is called with arguments `Model, req, res, next`:
 
 ```javascript
-var actions = require('modella-express').actions;
-
-actions.index = function(Model, req, res, next) {
-  // ...
-};
-
-actions.count = function(Model, req, res, next) {
-  // ...
-};
-
-actions.show = function(Model, req, res, next) {
-  // ...
-};
-
-actions.create = function(Model, req, res, next) {
-  // ...
-};
-
-actions.update = function(Model, req, res, next) {
-  // ...
-};
-
-actions.destroy = function(Model, req, res, next) {
-  // ...
-};
+app.use(resource(User, {
+  index:   function(Model, req, res, next) { },
+  count:   function(Model, req, res, next) { },
+  show:    function(Model, req, res, next) { },
+  create:  function(Model, req, res, next) { },
+  update:  function(Model, req, res, next) { },
+  destroy: function(Model, req, res, next) { }
+});
 ```
 
 ## MIT Licensed
