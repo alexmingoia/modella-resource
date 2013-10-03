@@ -116,16 +116,9 @@ resource.match = function(path, req, res, next) {
         return this.load(matches[1], function(err, model) {
           if (err) return next(err);
           req[Model.modelName.toLowerCase()] = model;
+          req.query.related = model;
           nested[0].path = path.replace(matches[0], '');
-          if (model[nested[0].path.substr(1)]) {
-            model[nested[0].path.substr(1)](req.query, function(err, result) {
-              if (err) return next(err);
-              res.json(result);
-            });
-          }
-          else {
-            nested[0].match(nested[0].path, req, res, nextResource);
-          }
+          nested[0].match(nested[0].path, req, res, nextResource);
         });
       }
     }
