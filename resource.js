@@ -164,7 +164,7 @@ resource.create = function(req, res, next) {
   model.save(function(err) {
     if (err) return next(err);
     res.set('Location', model.url());
-    res.send(201);
+    res.send(model);
   });
 };
 
