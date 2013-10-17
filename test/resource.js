@@ -121,7 +121,8 @@ describe('module', function() {
         .set('Accept', 'application/json')
         .end(function(res) {
           if (res.error) return done(res.error);
-          res.status.should.equal(201);
+          res.status.should.equal(200);
+          res.body.should.have.property('id', 123);
           done();
         });
     });
