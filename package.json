@@ -1,7 +1,7 @@
 {
   "name": "modella-resource",
   "description": "Expose Modella models via Express middleware. Adds REST routes with callbacks including self-describing OPTIONS response for each route.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Alex Mingoia <talk@alexmingoia.com>",
   "homepage": "https://github.com/bloodhound/modella-resource",
   "contributors": [
