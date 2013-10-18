@@ -162,7 +162,10 @@ resource.show = function(req, res, next) {
 resource.create = function(req, res, next) {
   var model = new this.Model(req.body);
   model.save(function(err) {
-    if (err) return next(err);
+    if (err) {
+      err.model = model;
+      return next(err);
+    }
     res.set('Location', model.url());
     res.json(model);
   });
@@ -170,7 +173,10 @@ resource.create = function(req, res, next) {
 
 resource.update = function(req, res, next) {
   this.Model.find(req.params.id, function(err, model) {
-    if (err) return next(err);
+    if (err) {
+      err.model = model;
+      return next(err);
+    }
     model.set(req.body);
     model.save(function(err) {
       if (err) return next(err);
@@ -183,7 +189,10 @@ resource.destroy = function(req, res, next) {
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     model.remove(function(err) {
-      if (err) return next(err);
+      if (err) {
+        err.model = model;
+        return next(err);
+      }
       res.send(204);
     });
   });
