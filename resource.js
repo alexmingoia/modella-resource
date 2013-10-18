@@ -173,13 +173,13 @@ resource.create = function(req, res, next) {
 
 resource.update = function(req, res, next) {
   this.Model.find(req.params.id, function(err, model) {
-    if (err) {
-      err.model = model;
-      return next(err);
-    }
+    if (err) return next(err);
     model.set(req.body);
     model.save(function(err) {
-      if (err) return next(err);
+      if (err) {
+        err.model = model;
+        return next(err);
+      }
       res.json(model);
     });
   });
