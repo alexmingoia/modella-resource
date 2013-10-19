@@ -3,27 +3,40 @@
  */
 
 var express = require('express')
-  , resource = require('..')
+  , Resource = require('..')
   , modella = require('modella')
   , should = require('should')
-  , request = require('superagent');
+  , request = require('supertest');
 
 describe('module', function() {
-  var serverPort = process.env.MODELLA_EXPRESS_TEST_SERVER_PORT || 6001;
-  var serverUrl = 'http://localhost:' + serverPort;
   var app = express();
   User = modella('User').attr('id').attr('name');
   User.base = '/users';
   app.use(express.bodyParser());
 
   it('exports middleware', function(done) {
-    should.exist(resource);
-    resource.should.be.a('function');
-    var middleware = resource(User).middleware();
+    should.exist(Resource);
+    Resource.should.be.a('function');
+    var middleware = Resource(User).middleware();
     should.exist(middleware);
     middleware.should.be.a('function');
     app.use(middleware);
-    app.listen(serverPort);
+    app.use(function(err, req, res, next) {
+      res.json(500, { error: err.message });
+    });
+    done();
+  });
+
+  it('middleware adds resource to app.resources', function(done) {
+    var resource = Resource(User);
+    if (app.resources) {
+      app.resources.should.be.empty;
+    }
+    var middleware = resource.middleware(app);
+    app.should.have.property('resources');
+    app.resources.should.be.a('object');
+    app.resources.should.have.property(resource.Model.modelName);
+    app.resources[resource.Model.modelName].should.have.property('Model');
     done();
   });
 
@@ -32,24 +45,27 @@ describe('module', function() {
       User.all = function(query, callback) {
         callback(null, []);
       };
-      request
-        .get(serverUrl + '/users')
+      request(app)
+        .get('/users')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .expect(200)
+        .end(function(err, res) {
+          if (err) return done(err);
           done();
         });
     });
 
-    it('passes error along to callback', function(done) {
+    it('passes error along to response', function(done) {
       User.all = function(query, callback) {
         callback(new Error("uh oh"));
       };
-      request
-        .get(serverUrl + '/users')
+      request(app)
+        .get('/users')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
           done();
         });
     });
@@ -60,24 +76,26 @@ describe('module', function() {
       User.count = function(query, callback) {
         callback();
       };
-      request
-        .get(serverUrl + '/users/count')
+      request(app)
+        .get('/users/count')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           done();
         });
     });
 
-    it('passes error along to callback', function(done) {
+    it('passes error along to response', function(done) {
       User.count = function(query, callback) {
         callback(new Error("uh oh"));
       };
-      request
-        .get(serverUrl + '/users/count')
+      request(app)
+        .get('/users/count')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
           done();
         });
     });
@@ -88,26 +106,28 @@ describe('module', function() {
       User.find = function(id, callback) {
         callback(null, { id: 123, name: "bob" });
       };
-      request
-        .get(serverUrl + '/users/123')
+      request(app)
+        .get('/users/123')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.body.should.have.property('id', 123);
           res.body.should.have.property('name', 'bob');
           done();
         });
     });
 
-    it('passes error along to callback', function(done) {
+    it('passes error along to response', function(done) {
       User.find = function(callback) {
         callback(new Error("uh oh"));
       };
-      request
-        .get(serverUrl + '/users/123')
+      request(app)
+        .get('/users/123')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
           done();
         });
     });
@@ -115,24 +135,26 @@ describe('module', function() {
 
   describe('resource.create()', function(done) {
     it('responds to POST /users', function(done) {
-      request
-        .post(serverUrl + '/users')
+      request(app)
+        .post('/users')
         .send({ id: 123, name: "bob" })
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.status.should.equal(200);
           res.body.should.have.property('id', 123);
           done();
         });
     });
 
-    it('passes error along to callback', function(done) {
-      request
-        .post(serverUrl + '/users')
+    it('passes error along to response', function(done) {
+      request(app)
+        .post('/users')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
           done();
         });
     });
@@ -143,28 +165,30 @@ describe('module', function() {
       User.find = function(id, callback) {
         callback(null, new User({ id: 123, name: "jeff" }));
       };
-      request
-        .put(serverUrl + '/users/123')
+      request(app)
+        .put('/users/123')
         .send({ name: "jeff" })
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.body.should.have.property('id', 123);
           res.body.should.have.property('name', 'jeff');
           done();
         });
     });
 
-    it('passes error along to callback', function(done) {
+    it('passes error along to response', function(done) {
       User.find = function(id, callback) {
         callback(new Error("uh oh"));
       };
-      request
-        .put(serverUrl + '/users/123')
+      request(app)
+        .put('/users/123')
         .send({ name: "jeff" })
         .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
           done();
         });
     });
@@ -180,28 +204,30 @@ describe('module', function() {
       user.remove = function(callback) {
         callback(null);
       };
-      request
-        .del(serverUrl + '/users/123')
+      request(app)
+        .del('/users/123')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.status.should.equal(204);
           done();
         });
     });
 
-    it('passes error along to callback', function(done) {
+    it('passes error along to response', function(done) {
       User.find = function(id, callback) {
         callback();
       };
       user.remove = function(callback) {
         callback(new Error("uh oh"));
       };
-      request
-        .del(serverUrl + '/users/123')
+      request(app)
+        .del('/users/123')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
           done();
         });
     });
@@ -211,11 +237,11 @@ describe('module', function() {
     var user = new User({ id: 123, name: "jeff" });
 
     it('responds to OPTIONS /users', function(done) {
-      request
-        .options(serverUrl + '/users')
+      request(app)
+        .options('/users')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.body.should.have.property('GET');
           res.body.should.have.property('POST');
           done();
@@ -223,35 +249,25 @@ describe('module', function() {
     });
 
     it('responds to OPTIONS /users/count', function(done) {
-      request
-        .options(serverUrl + '/users/count')
+      request(app)
+        .options('/users/count')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.body.should.have.property('GET');
           done();
         });
     });
 
     it('responds to OPTIONS /users/123', function(done) {
-      request
-        .options(serverUrl + '/users/123')
+      request(app)
+        .options('/users/123')
         .set('Accept', 'application/json')
-        .end(function(res) {
-          if (res.error) return done(res.error);
+        .end(function(err, res) {
+          if (err) return done(err);
           res.body.should.have.property('GET');
           res.body.should.have.property('PUT');
           res.body.should.have.property('DELETE');
-          done();
-        });
-    });
-
-    it('passes error along to callback', function(done) {
-      request
-        .options(serverUrl + '/noroute')
-        .set('Accept', 'application/json')
-        .end(function(res) {
-          res.error.should.not.equal(false);
           done();
         });
     });

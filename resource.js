@@ -69,15 +69,20 @@ var resource = Resource.prototype;
 /**
  * Returns Express/Connect middleware.
  *
+ * @param {Application} app Optional. Adds resource to `app.resources`.
  * @return {Function(req, res, next)}
  * @api public
  */
 
-resource.middleware = function() {
-  var self = this;
+resource.middleware = function(app) {
+  var resource = this;
+  if (app) {
+    app.resources = app.resources || {};
+    app.resources[resource.Model.modelName] = resource;
+  }
   return function(req, res, next) {
     req.params = req.params || {};
-    self.match(req.path, req, res, next);
+    resource.match(req.path, req, res, next);
   };
 };
 
