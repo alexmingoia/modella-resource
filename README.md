@@ -26,7 +26,9 @@ var app = express();
 
 var User = modella('User');
 
-app.use(resource(User).middleware());
+User.use(resource());
+
+app.use(User.middleware());
 ```
 
 These routes will then be available:
@@ -54,7 +56,7 @@ You can override the resource actions if you want to customize the route
 callbacks. Each actions is called with arguments `Model, req, res, next`:
 
 ```javascript
-app.use(resource(User, {
+User.use(resource({
   index:   function(Model, req, res, next) { },
   count:   function(Model, req, res, next) { },
   show:    function(Model, req, res, next) { },
@@ -62,6 +64,9 @@ app.use(resource(User, {
   update:  function(Model, req, res, next) { },
   destroy: function(Model, req, res, next) { }
 });
+
+// You may also override them after the resource is created:
+User.resource.index = myIndexAction;
 ```
 
 ## Nesting resources
@@ -69,10 +74,10 @@ app.use(resource(User, {
 You can nest resources using `resource.add()`:
 
 ```javascript
-var UserResource = resource(User);
-var PostResource = resource(Post);
+User.use(resource());
+Post.use(resource());
 
-app.use(UserResource.add(PostResource).middleware());
+app.use(User.add(Post).middleware());
 ```
 
 This creates routes such as `/users/:id/posts` and so on.

@@ -18,10 +18,27 @@ var extend = require('extend')
   , inflect = require('inflect');
 
 /**
+ * Modella plugin
+ *
+ * @param {Object} actions Override resource actions for this Model.
+ * @return {Function(Model)}
+ * @api public
+ */
+
+module.exports = function(actions) {
+  return function(Model) {
+    Model.resource = new Resource(Model, actions);
+    Model.middleware = Model.resource.middleware;
+    Model.add = Model.resource.add;
+    return Model;
+  };
+};
+
+/**
  * Expose `Resource`
  */
 
-module.exports = Resource;
+module.exports.Resource = Resource;
 
 /**
  * Create new Resource with given `Model`.
@@ -69,17 +86,12 @@ var resource = Resource.prototype;
 /**
  * Returns Express/Connect middleware.
  *
- * @param {Application} app Optional. Adds resource to `app.resources`.
  * @return {Function(req, res, next)}
  * @api public
  */
 
-resource.middleware = function(app) {
-  var resource = this;
-  if (app) {
-    app.resources = app.resources || {};
-    app.resources[resource.Model.modelName] = resource;
-  }
+resource.middleware = function() {
+  var resource = this.resource || this;
   return function(req, res, next) {
     req.params = req.params || {};
     resource.match(req.path, req, res, next);
@@ -138,8 +150,13 @@ resource.load = function(id, callback) {
   this.Model.find(id, callback);
 };
 
+/**
+ * Supports being called as `resource.add()` or `model.add()`.
+ */
 resource.add = function(resource) {
-  this.nested.push(resource);
+  var self = this.resource || this;
+  resource = resource.resource || resource;
+  self.nested.push(resource);
   return this;
 };
 

@@ -3,21 +3,59 @@
  */
 
 var express = require('express')
-  , Resource = require('..')
+  , plugin = require('..')
   , modella = require('modella')
   , should = require('should')
   , request = require('supertest');
 
 describe('module', function() {
+  it('exports modella plugin', function(done) {
+    should.exist(plugin);
+    plugin.should.be.a('function');
+    var fn = plugin();
+    should.exist(fn);
+    fn.should.be.a('function');
+    done();
+  });
+
+  it('exports Resource', function(done) {
+    plugin.should.have.property('Resource');
+    plugin.Resource.should.be.a('function');
+    done();
+  });
+});
+
+describe('plugin', function() {
+  it('creates resource for model', function(done) {
+    User = modella('User').attr('id').attr('name');
+    User.use(plugin());
+    User.should.have.property('resource');
+    User.resource.should.have.property('Model');
+    done();
+  });
+
+  it('adds resource methods to model', function(done) {
+    User = modella('User').attr('id').attr('name');
+    User.use(plugin());
+    User.should.have.property('middleware');
+    User.middleware.should.be.a('function');
+    User.should.have.property('add');
+    User.add.should.be.a('function');
+    done();
+  });
+});
+
+describe('Resource', function() {
   var app = express();
-  User = modella('User').attr('id').attr('name');
-  User.base = '/users';
   app.use(express.bodyParser());
 
+  User = modella('User').attr('id').attr('name');
+  User.base = '/users';
+
+  var resource = new plugin.Resource(User);
+
   it('exports middleware', function(done) {
-    should.exist(Resource);
-    Resource.should.be.a('function');
-    var middleware = Resource(User).middleware();
+    var middleware = resource.middleware();
     should.exist(middleware);
     middleware.should.be.a('function');
     app.use(middleware);
@@ -27,22 +65,9 @@ describe('module', function() {
     done();
   });
 
-  it('middleware adds resource to app.resources', function(done) {
-    var resource = Resource(User);
-    if (app.resources) {
-      app.resources.should.be.empty;
-    }
-    var middleware = resource.middleware(app);
-    app.should.have.property('resources');
-    app.resources.should.be.a('object');
-    app.resources.should.have.property(resource.Model.modelName);
-    app.resources[resource.Model.modelName].should.have.property('Model');
-    done();
-  });
-
-  describe('resource.index()', function() {
+  describe('.index()', function() {
     it('responds to GET /users', function(done) {
-      User.all = function(query, callback) {
+      resource.Model.all = function(query, callback) {
         callback(null, []);
       };
       request(app)
@@ -56,7 +81,7 @@ describe('module', function() {
     });
 
     it('passes error along to response', function(done) {
-      User.all = function(query, callback) {
+      resource.Model.all = function(query, callback) {
         callback(new Error("uh oh"));
       };
       request(app)
@@ -71,9 +96,9 @@ describe('module', function() {
     });
   });
 
-  describe('resource.count()', function(done) {
+  describe('.count()', function(done) {
     it('responds to GET /users/count', function(done) {
-      User.count = function(query, callback) {
+      resource.Model.count = function(query, callback) {
         callback();
       };
       request(app)
@@ -86,7 +111,7 @@ describe('module', function() {
     });
 
     it('passes error along to response', function(done) {
-      User.count = function(query, callback) {
+      resource.Model.count = function(query, callback) {
         callback(new Error("uh oh"));
       };
       request(app)
@@ -101,9 +126,9 @@ describe('module', function() {
     });
   });
 
-  describe('resource.show()', function(done) {
+  describe('.show()', function(done) {
     it('responds to GET /users/123', function(done) {
-      User.find = function(id, callback) {
+      resource.Model.find = function(id, callback) {
         callback(null, { id: 123, name: "bob" });
       };
       request(app)
@@ -118,7 +143,7 @@ describe('module', function() {
     });
 
     it('passes error along to response', function(done) {
-      User.find = function(callback) {
+      resource.Model.find = function(callback) {
         callback(new Error("uh oh"));
       };
       request(app)
@@ -133,7 +158,7 @@ describe('module', function() {
     });
   });
 
-  describe('resource.create()', function(done) {
+  describe('.create()', function(done) {
     it('responds to POST /users', function(done) {
       request(app)
         .post('/users')
@@ -160,9 +185,9 @@ describe('module', function() {
     });
   });
 
-  describe('resource.update()', function(done) {
+  describe('.update()', function(done) {
     it('responds to PUT /users/123', function(done) {
-      User.find = function(id, callback) {
+      resource.Model.find = function(id, callback) {
         callback(null, new User({ id: 123, name: "jeff" }));
       };
       request(app)
@@ -178,7 +203,7 @@ describe('module', function() {
     });
 
     it('passes error along to response', function(done) {
-      User.find = function(id, callback) {
+      resource.Model.find = function(id, callback) {
         callback(new Error("uh oh"));
       };
       request(app)
@@ -194,11 +219,11 @@ describe('module', function() {
     });
   });
 
-  describe('resource.destroy()', function(done) {
+  describe('.destroy()', function(done) {
     var user = new User({ id: 123, name: "jeff" });
 
     it('responds to DELETE /users/123', function(done) {
-      User.find = function(id, callback) {
+      resource.Model.find = function(id, callback) {
         callback(null, user);
       };
       user.remove = function(callback) {
@@ -215,7 +240,7 @@ describe('module', function() {
     });
 
     it('passes error along to response', function(done) {
-      User.find = function(id, callback) {
+      resource.Model.find = function(id, callback) {
         callback();
       };
       user.remove = function(callback) {
@@ -233,7 +258,7 @@ describe('module', function() {
     });
   });
 
-  describe('resource.options()', function(done) {
+  describe('.options()', function(done) {
     var user = new User({ id: 123, name: "jeff" });
 
     it('responds to OPTIONS /users', function(done) {
