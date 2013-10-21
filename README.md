@@ -42,33 +42,6 @@ These routes will then be available:
     GET, PUT, DELETE, OPTIONS
 ```
 
-## Self-describing OPTIONS
-
-If an `OPTIONS` request is made to any endpoint defined by modella-resource, a
-JSON description of the available actions is included in the response body.
-
-You can combine this with OPTIONS middleware mounted at your API root path,
-which responds with a JSON description of the available resources.
-
-## Actions
-
-You can override the resource actions if you want to customize the route
-callbacks. Each actions is called with arguments `Model, req, res, next`:
-
-```javascript
-User.use(resource({
-  index:   function(Model, req, res, next) { },
-  count:   function(Model, req, res, next) { },
-  show:    function(Model, req, res, next) { },
-  create:  function(Model, req, res, next) { },
-  update:  function(Model, req, res, next) { },
-  destroy: function(Model, req, res, next) { }
-});
-
-// You may also override them after the resource is created:
-User.resource.index = myIndexAction;
-```
-
 ## Nesting resources
 
 You can nest resources using `resource.add()`:
@@ -85,5 +58,74 @@ This creates routes such as `/users/:id/posts` and so on.
 ## Resource#middleware
 
 Returns Express/Connect middleware.
+
+## Options
+
+### Before hook
+
+You can run middleware after the request is matched, but before the resource
+action is run using `options.before`.
+
+```javascript
+// Run middleware before any action
+User.use(resource({
+  before: function(req, res, next) {
+    console.log(this);
+    // => resource
+    console.log(this.Model);
+    // => Model
+  }
+}));
+
+// Run middleware before specific actions
+User.use(resource({
+  before: {
+    show: myMiddleware,
+    create: myMiddleware
+  }
+}));
+```
+
+### Context integration
+
+You can automatically set the
+[context](https://github.com/alexmingoia/modella-context) of model(s) loaded
+from `req.ctx` by enabling `options.setContext`. Any model loaded, including
+those returned in collections, will have their context set.
+
+```javascript
+User.use(resource({
+  setContext: true
+}));
+```
+
+### Override actions
+
+You can override the resource actions if you want to customize the route
+callbacks. Each actions is called with arguments `Model, req, res, next`:
+
+```javascript
+User.use(resource({
+  actions: {
+    index:   function(req, res, next) { },
+    count:   function(req, res, next) { },
+    show:    function(req, res, next) { },
+    create:  function(req, res, next) { },
+    update:  function(req, res, next) { },
+    destroy: function(req, res, next) { }
+  }
+}));
+
+// You may also override them after the resource is created:
+User.resource.index = myIndexAction;
+```
+
+## Self-describing OPTIONS
+
+If an `OPTIONS` request is made to any endpoint defined by modella-resource, a
+JSON description of the available actions is included in the response body.
+
+You can combine this with OPTIONS middleware mounted at your API root path,
+which responds with a JSON description of the available resources.
 
 ## MIT Licensed

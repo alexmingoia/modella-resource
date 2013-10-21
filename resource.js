@@ -14,20 +14,21 @@
  * Dependencies
  */
 
-var extend = require('extend')
+var errors = require('http-error')
+  , extend = require('extend')
   , inflect = require('inflect');
 
 /**
  * Modella plugin
  *
- * @param {Object} actions Override resource actions for this Model.
+ * @param {Object} options
  * @return {Function(Model)}
  * @api public
  */
 
-module.exports = function(actions) {
+module.exports = function(options) {
   return function(Model) {
-    Model.resource = new Resource(Model, actions);
+    Model.resource = new Resource(Model, options);
     Model.middleware = Model.resource.middleware;
     Model.add = Model.resource.add;
     return Model;
@@ -49,19 +50,31 @@ module.exports.Resource = Resource;
  * @api public
  */
 
-function Resource(Model, actions) {
+function Resource(Model, options) {
   if (!(this instanceof Resource)) return new Resource(Model, actions);
   this.Model = Model;
   this.base = Model.base;
   this.nested = [];
   this.path;
-  if (actions) {
-    for (var key in actions) {
+  options = options || {};
+  if (options.actions) {
+    for (var key in options.actions) {
       if (Resource.prototype[key]) {
-        this[key] = actions[key];
+        this[key] = options.actions[key];
       }
     }
   }
+  if (options.before && typeof options.before === 'function') {
+    options.before = {
+      index: options.before,
+      create: options.before,
+      count: options.before,
+      show: options.before,
+      update: options.before,
+      destroy: options.before
+    };
+  }
+  this.options = options;
   this.urls = [{
     regex:  new RegExp('^' + this.base + '$'),
     GET:    'index',
@@ -90,8 +103,9 @@ var resource = Resource.prototype;
  * @api public
  */
 
-resource.middleware = function() {
+resource.middleware = function(options) {
   var resource = this.resource || this;
+  extend(resource.options, options);
   return function(req, res, next) {
     req.params = req.params || {};
     resource.match(req.path, req, res, next);
@@ -116,9 +130,19 @@ resource.match = function(path, req, res, next) {
     var matches = path.match(urls[i].regex);
     if (!matches) continue;
     if (urls[i][req.method]) {
+      var action = urls[i][req.method];
+      var self = this;
       if (matches[1]) req.params.id = matches[1];
-      if (matches[0] === path) {
-        return this[urls[i][req.method]](req, res, next);
+      if (matches[0] === path || req.method === 'OPTIONS') {
+        if (req.method === 'OPTIONS') req._actions = urls[i];
+        var beforeNext = function(err) {
+          if (err) return next(err);
+          self[action](req, res, next);
+        };
+        if (this.options.before && this.options.before[action]) {
+          return this.options.before[action].call(this, req, res, beforeNext);
+        }
+        return this[action](req, res, next);
       }
       if (nested.length) {
         var i = 0;
@@ -139,8 +163,8 @@ resource.match = function(path, req, res, next) {
         });
       }
     }
-    else if ('OPTIONS' === req.method) {
-      return this.options(urls[i], req, res, next);
+    else {
+      return next(new errors.NotImplemented());
     }
   }
   next();
@@ -161,8 +185,10 @@ resource.add = function(resource) {
 };
 
 resource.index = function(req, res, next) {
+  var options = this.options;
   this.Model.all(req.query, function(err, collection) {
     if (err) return next(err);
+    if (options.setContext) setContext(req, collection);
     res.json(collection);
   });
 };
@@ -175,14 +201,17 @@ resource.count = function(req, res, next) {
 };
 
 resource.show = function(req, res, next) {
+  var options = this.options;
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
+    if (options.setContext) setContext(req, model);
     res.json(model);
   });
 };
 
 resource.create = function(req, res, next) {
   var model = new this.Model(req.body);
+  if (this.options.setContext) setContext(req, model);
   model.save(function(err) {
     if (err) {
       err.model = model;
@@ -194,8 +223,10 @@ resource.create = function(req, res, next) {
 };
 
 resource.update = function(req, res, next) {
+  var options = this.options;
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
+    if (options.setContext) setContext(req, model);
     model.set(req.body);
     model.save(function(err) {
       if (err) {
@@ -208,8 +239,10 @@ resource.update = function(req, res, next) {
 };
 
 resource.destroy = function(req, res, next) {
+  var options = this.options;
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
+    if (options.setContext) setContext(req, model);
     model.remove(function(err) {
       if (err) {
         err.model = model;
@@ -220,7 +253,8 @@ resource.destroy = function(req, res, next) {
   });
 };
 
-resource.options = function(actions, req, res, next) {
+resource.options = function(req, res, next) {
+  var actions = req._actions;
   var body = {};
   var methods = [];
   var Model = this.Model;
@@ -232,6 +266,22 @@ resource.options = function(actions, req, res, next) {
   }
   res.setHeader('Allow', methods.join(', '));
   res.json(200, body);
+};
+
+/**
+ * Sets context for model or array of models using `req.ctx`.
+ *
+ * This behavior is enabled using `options.setContext`.
+ */
+function setContext(req, model) {
+  if (model instanceof Array) {
+    model.forEach(function(model) {
+      model.context(req.ctx);
+    });
+  }
+  else {
+    model.context(req.ctx);
+  }
 };
 
 /**
