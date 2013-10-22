@@ -74,19 +74,22 @@ function Resource(Model, options) {
       destroy: options.before
     };
   }
-  this.options = options;
+  this.opts = options;
   this.urls = [{
     regex:  new RegExp('^' + this.base + '$'),
-    GET:    'index',
-    POST:   'create'
+    GET:     'index',
+    POST:    'create',
+    OPTIONS: 'options'
   }, {
     regex:  new RegExp('^' + this.base + '/count$'),
-    GET:    'count'
+    GET:     'count',
+    OPTIONS: 'options'
   }, {
     regex:  new RegExp('^' + this.base + '/([^/]+)'),
-    GET:    'show',
-    PUT:    'update',
-    DELETE: 'destroy'
+    GET:     'show',
+    PUT:     'update',
+    DELETE:  'destroy',
+    OPTIONS: 'options'
   }];
 };
 
@@ -139,8 +142,8 @@ resource.match = function(path, req, res, next) {
           if (err) return next(err);
           self[action](req, res, next);
         };
-        if (this.options.before && this.options.before[action]) {
-          return this.options.before[action].call(this, req, res, beforeNext);
+        if (this.opts.before && this.opts.before[action]) {
+          return this.opts.before[action].call(this, req, res, beforeNext);
         }
         return this[action](req, res, next);
       }
@@ -185,7 +188,7 @@ resource.add = function(resource) {
 };
 
 resource.index = function(req, res, next) {
-  var options = this.options;
+  var options = this.opts;
   this.Model.all(req.query, function(err, collection) {
     if (err) return next(err);
     if (options.setContext) setContext(req, collection);
@@ -201,7 +204,7 @@ resource.count = function(req, res, next) {
 };
 
 resource.show = function(req, res, next) {
-  var options = this.options;
+  var options = this.opts;
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     if (options.setContext) setContext(req, model);
@@ -211,7 +214,7 @@ resource.show = function(req, res, next) {
 
 resource.create = function(req, res, next) {
   var model = new this.Model(req.body);
-  if (this.options.setContext) setContext(req, model);
+  if (this.opts.setContext) setContext(req, model);
   model.save(function(err) {
     if (err) {
       err.model = model;
@@ -223,7 +226,7 @@ resource.create = function(req, res, next) {
 };
 
 resource.update = function(req, res, next) {
-  var options = this.options;
+  var options = this.opts;
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     if (options.setContext) setContext(req, model);
@@ -239,7 +242,7 @@ resource.update = function(req, res, next) {
 };
 
 resource.destroy = function(req, res, next) {
-  var options = this.options;
+  var options = this.opts;
   this.Model.find(req.params.id, function(err, model) {
     if (err) return next(err);
     if (options.setContext) setContext(req, model);
