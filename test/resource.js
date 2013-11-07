@@ -38,7 +38,6 @@ describe('plugin', function() {
   it('creates actions middleware for model', function(done) {
     User.should.have.property('middleware');
     User.middleware.should.have.property('index');
-    User.middleware.should.have.property('count');
     User.middleware.should.have.property('show');
     User.middleware.should.have.property('create');
     User.middleware.should.have.property('update');
@@ -67,36 +66,6 @@ describe('plugin', function() {
       };
       request(app)
         .get('/users')
-        .set('Accept', 'application/json')
-        .expect(500)
-        .end(function(err, res) {
-          if (err) return done(err);
-          res.body.should.have.property('error');
-          done();
-        });
-    });
-  });
-
-  describe('.count()', function(done) {
-    it('responds to GET /users/count', function(done) {
-      User.count = function(query, callback) {
-        callback();
-      };
-      request(app)
-        .get('/users/count')
-        .set('Accept', 'application/json')
-        .end(function(err, res) {
-          if (err) return done(err);
-          done();
-        });
-    });
-
-    it('passes error along to response', function(done) {
-      User.count = function(query, callback) {
-        callback(new Error("uh oh"));
-      };
-      request(app)
-        .get('/users/count')
         .set('Accept', 'application/json')
         .expect(500)
         .end(function(err, res) {
