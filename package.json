@@ -1,9 +1,9 @@
 {
   "name": "modella-resource",
   "description": "Expose Modella models via RESTful resource middleware.",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "author": "Alex Mingoia <talk@alexmingoia.com>",
-  "homepage": "https://github.com/modella/resource",
+  "homepage": "https://github.com/alexmingoia/modella-resource",
   "keywords": [
     "express",
     "modella",
@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/modella/resource.git"
+    "url": "git://github.com/alexmingoia/modella-resource.git"
   },
   "main": "./lib/resource.js",
   "dependencies": {
