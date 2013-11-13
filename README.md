@@ -1,7 +1,7 @@
 # modella-resource
 
-[![Build Status](https://secure.travis-ci.org/alexmingoia/modella-resource.png)](http://travis-ci.org/alexmingoia/modella-resource) 
-[![Dependency Status](https://david-dm.org/alexmingoia/modella-resource.png)](http://david-dm.org/alexmingoia/modella-resource)
+[![Build Status](https://secure.travis-ci.org/modella/resource.png)](http://travis-ci.org/modella/resource) 
+[![Dependency Status](https://david-dm.org/modella/resource.png)](http://david-dm.org/modella/resource)
 
 Expose [Modella][0] models via RESTful resource middleware.
 
