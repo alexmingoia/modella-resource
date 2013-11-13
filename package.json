@@ -4,6 +4,14 @@
   "version": "0.10.1",
   "author": "Alex Mingoia <talk@alexmingoia.com>",
   "homepage": "https://github.com/modella/resource",
+  "keywords": [
+    "express",
+    "modella",
+    "resource",
+    "routing",
+    "middleware",
+    "REST"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/modella/resource.git"
