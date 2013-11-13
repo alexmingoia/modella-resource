@@ -17,7 +17,7 @@ describe('module', function() {
 });
 
 describe('plugin', function() {
-  var User = modella('User').use(plugin).attr('id').attr('name');
+  var User = modella('User').use(plugin()).attr('id').attr('name');
 
   var app = express();
 
