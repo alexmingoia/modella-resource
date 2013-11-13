@@ -110,11 +110,16 @@ describe('plugin', function() {
 
   describe('.create()', function(done) {
     it('responds to POST /users', function(done) {
+      var update = User.update;
+      User.update = function(cb) {
+        cb(null, { id: 123, name: "bob" });
+      };
       request(app)
         .post('/users')
         .send({ id: 123, name: "bob" })
         .set('Accept', 'application/json')
         .end(function(err, res) {
+          User.update = update;
           if (err) return done(err);
           res.status.should.equal(200);
           res.body.should.have.property('id', 123);
@@ -138,13 +143,18 @@ describe('plugin', function() {
   describe('.update()', function(done) {
     it('responds to PUT /users/123', function(done) {
       User.find = function(id, callback) {
-        callback(null, new User({ id: 123, name: "jeff" }));
+        callback(null, new User({ id: 123, name: "bob" }));
+      };
+      var update = User.update;
+      User.update = function(cb) {
+        cb(null, { id: 123, name: "jeff" });
       };
       request(app)
         .put('/users/123')
         .send({ name: "jeff" })
         .set('Accept', 'application/json')
         .end(function(err, res) {
+          User.update = update;
           if (err) return done(err);
           res.body.should.have.property('id', 123);
           res.body.should.have.property('name', 'jeff');
