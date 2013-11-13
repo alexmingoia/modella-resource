@@ -3,9 +3,9 @@
 [![Build Status](https://secure.travis-ci.org/alexmingoia/modella-resource.png)](http://travis-ci.org/alexmingoia/modella-resource) 
 [![Dependency Status](https://david-dm.org/alexmingoia/modella-resource.png)](http://david-dm.org/alexmingoia/modella-resource)
 
-Expose [Modella](https://github.com/modella/modella/) models via RESTful resource middleware.
+Expose [Modella][0] models via RESTful resource middleware.
 
-This module can be paired with [modella-ajax](https://github.com/modella/ajax)
+This module can be paired with [modella-ajax][1]
 for automatic client-server communication.
 
 ## Installation
@@ -16,16 +16,19 @@ npm install modella-resource
 
 ## Example
 
+Use with [express][2]:
+
 ```javascript
 var express = require('express')
-  , modella = require('modella');
+  , modella = require('modella')
+  , resource = require('modella-resource');
 
 var User = modella('User');
 
 User
-  .use(require('modella-resource'))
   .attr('id')
-  .attr('name');
+  .attr('name')
+  .use('server', resource());
 
 var app = express();
 
@@ -38,4 +41,15 @@ app
   .del('/users/:id', User.middleware.destroy);
 ```
 
+Use with [express-resource][3]:
+
+```javascript
+app.resource('users', User.middleware);
+```
+
 ## MIT Licensed
+
+[0]: https://github.com/modella/modella/
+[1]: https://github.com/modella/ajax/
+[2]: https://github.com/visionmedia/express/
+[3]: https://github.com/visionmedia/express-resource/
