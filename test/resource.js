@@ -28,6 +28,7 @@ describe('plugin', function() {
     .post('/users', User.middleware.create)
     .put('/users/:id', User.middleware.update)
     .del('/users/:id', User.middleware.destroy)
+    .del('/users', User.middleware.destroyAll)
     .use(function(err, req, res, next) {
       if (err) {
         return res.json(500, { error: err.message });
@@ -42,6 +43,7 @@ describe('plugin', function() {
     User.middleware.should.have.property('create');
     User.middleware.should.have.property('update');
     User.middleware.should.have.property('destroy');
+    User.middleware.should.have.property('destroyAll');
     done();
   });
 
@@ -208,6 +210,37 @@ describe('plugin', function() {
       };
       request(app)
         .del('/users/123')
+        .set('Accept', 'application/json')
+        .expect(500)
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.body.should.have.property('error');
+          done();
+        });
+    });
+  });
+
+  describe('.destroyAll()', function(done) {
+    it('responds to DELETE /users', function(done) {
+      User.removeAll = function(query, callback) {
+        callback();
+      };
+      request(app)
+        .del('/users')
+        .set('Accept', 'application/json')
+        .end(function(err, res) {
+          if (err) return done(err);
+          res.status.should.equal(204);
+          done();
+        });
+    });
+
+    it('passes error along to response', function(done) {
+      User.removeAll = function(query, callback) {
+        callback(new Error("uh oh"));
+      };
+      request(app)
+        .del('/users')
         .set('Accept', 'application/json')
         .expect(500)
         .end(function(err, res) {
