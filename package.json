@@ -1,7 +1,7 @@
 {
   "name": "modella-resource",
   "description": "Expose Modella models via RESTful resource middleware.",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "author": "Alex Mingoia <talk@alexmingoia.com>",
   "homepage": "https://github.com/alexmingoia/modella-resource",
   "keywords": [
